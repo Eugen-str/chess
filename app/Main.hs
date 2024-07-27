@@ -4,11 +4,9 @@ import Draw
 import Game
 import Input
 
-import Data.Map (Map)
 import qualified Data.Map as Map
 
 import Graphics.Gloss
-import Graphics.Gloss.Interface.IO.Interact
 
 import Graphics.Gloss.Juicy
 
@@ -41,7 +39,7 @@ makeBoard strs = Board (makeBoard_ strs)
         _ -> error $ "Unkown piece: " <> [x]
 
 initGame :: Game
-initGame = Game b White 0 Nothing (0, 0)
+initGame = Game b White 0 Nothing Nothing (0, 0)
     where
         b = makeBoard [
             "RNBQKBNR",
@@ -55,10 +53,6 @@ initGame = Game b White 0 Nothing (0, 0)
 
 stepGame :: Float -> Game -> Game
 stepGame _ game = game
-
-fromJust :: Maybe a -> a
-fromJust (Just x) = x
-fromJust Nothing = error "ERROR: fromJust - Nothing"
 
 getAssets :: [String] -> IO [Picture]
 getAssets [] = return []

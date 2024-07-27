@@ -7,7 +7,7 @@ import Graphics.Gloss
 import Data.Map (Map)
 import qualified Data.Map as Map
 
-darkPurple,purple,lightPurple,fogWhite,skyBlue,blue,darkBlue,cream,coldWhite :: Color
+darkPurple,purple,lightPurple,fogWhite,skyBlue,blue,darkBlue,cream,coldWhite,trPurple,trRed :: Color
 darkPurple  = makeColorI  69  58  98 255
 purple      = makeColorI  94  80 134 255
 lightPurple = makeColorI 143  78 139 255
@@ -17,14 +17,26 @@ blue        = makeColorI  78  98 114 255
 darkBlue    = makeColorI  41  55  69 255
 cream       = makeColorI 244 241 226 255
 coldWhite   = makeColorI 240 240 250 255
+trPurple    = makeColorI  69  58  98 128
+trRed       = makeColorI 158  42  43 180
 
 bgColor :: Color
 bgColor = fogWhite
 
+hgColor :: Color
+hgColor = trRed
+
 showBoard :: [Picture]
-showBoard = [pictures [drawSquare x y | let i = y `mod` 2 , x <- [i,i+2..7]] | y <- [0..7] :: [Int]]
-    where
-        drawSquare x y = color Draw.blue $ translate (topLeft x) (topLeft y) (rectangleSolid sqSize sqSize)
+showBoard = [pictures [drawSquare x y Draw.blue | let i = y `mod` 2 , x <- [i,i+2..7]] | y <- [0..7] :: [Int]]
+
+drawSquare :: Int -> Int -> Color -> Picture
+drawSquare x y c = color c $ translate (topLeft x) (topLeft y) (rectangleSolid sqSize sqSize)
+
+drawSquareSmall :: Int -> Int -> Color -> Picture
+drawSquareSmall x y c = color c $ translate (topLeft x) (topLeft y) (rectangleSolid (sqSize - 5) (sqSize - 5))
+
+drawCircle :: Int -> Int -> Color -> Picture
+drawCircle x y c = color c $ translate (topLeft x) (topLeft y) (circleSolid (sqSize / 5))
 
 showPiece :: Piece -> Float -> Float -> Map String Picture -> Picture
 showPiece (Piece Empty _) _ _ _ = Blank
@@ -56,9 +68,10 @@ showPieces pcs assets = showPieces_ pcs 0
 
 
 showGame :: Map String Picture -> Game -> Picture
-showGame assets (Game (Board pcs) _ _ sel (mX, mY)) =
+showGame assets (Game (Board pcs) _ _ sel moves (mX, mY)) =
     pictures $
         showBoard ++
+        showAvailMoves moves ++
         showPieces pcs assets ++
         [selPic sel] ++
         showNums
@@ -67,3 +80,8 @@ showGame assets (Game (Board pcs) _ _ sel (mX, mY)) =
             selPic Nothing = Blank
 
             showNums = [translate (-(width/2) + 10) (topLeft y - sqSize / 2.4) $ scale 0.2 0.2 $ (text . show) (8-y) | y <- [7,6..0] :: [Int]]
+
+            showAvailMoves (Just mvs) = drawCircle sX sY hgColor : [drawSquareSmall x y hgColor | move <- mvs, let (x, y) = end move] 
+                where
+                    (sX, sY) = start (head mvs)
+            showAvailMoves Nothing = [Blank]

@@ -65,6 +65,7 @@ executable chess
     other-modules:    Draw
                     , Game
                     , Input
+                    , Moves
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
