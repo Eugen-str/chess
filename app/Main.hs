@@ -13,7 +13,7 @@ import Graphics.Gloss.Interface.IO.Interact
 import Graphics.Gloss.Juicy
 
 window :: Display
-window = InWindow "chess" (800, 800) (100, 100)
+window = InWindow "chess" (round width, round width) (100, 100)
 
 makeBoard :: [String] -> Board
 makeBoard strs = Board (makeBoard_ strs)
@@ -41,7 +41,7 @@ makeBoard strs = Board (makeBoard_ strs)
         _ -> error $ "Unkown piece: " <> [x]
 
 initGame :: Game
-initGame = Game b 0 Nothing (0, 0)
+initGame = Game b White 0 Nothing (0, 0)
     where
         b = makeBoard [
             "RNBQKBNR",

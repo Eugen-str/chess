@@ -7,12 +7,16 @@ import Graphics.Gloss
 import Data.Map (Map)
 import qualified Data.Map as Map
 
-darkPurple,purple,lightPurple,fogWhite,skyBlue :: Color
+darkPurple,purple,lightPurple,fogWhite,skyBlue,blue,darkBlue,cream,coldWhite :: Color
 darkPurple  = makeColorI  69  58  98 255
 purple      = makeColorI  94  80 134 255
 lightPurple = makeColorI 143  78 139 255
 fogWhite    = makeColorI 240 240 240 255
 skyBlue     = makeColorI  80 114 167 255
+blue        = makeColorI  78  98 114 255
+darkBlue    = makeColorI  41  55  69 255
+cream       = makeColorI 244 241 226 255
+coldWhite   = makeColorI 240 240 250 255
 
 bgColor :: Color
 bgColor = fogWhite
@@ -20,7 +24,7 @@ bgColor = fogWhite
 showBoard :: [Picture]
 showBoard = [pictures [drawSquare x y | let i = y `mod` 2 , x <- [i,i+2..7]] | y <- [0..7] :: [Int]]
     where
-        drawSquare x y = color skyBlue $ translate (topLeft x) (topLeft y) (rectangleSolid sqSize sqSize)
+        drawSquare x y = color Draw.blue $ translate (topLeft x) (topLeft y) (rectangleSolid sqSize sqSize)
 
 showPiece :: Piece -> Float -> Float -> Map String Picture -> Picture
 showPiece (Piece Empty _) _ _ _ = Blank
@@ -52,8 +56,14 @@ showPieces pcs assets = showPieces_ pcs 0
 
 
 showGame :: Map String Picture -> Game -> Picture
-showGame assets (Game (Board pcs) _ Nothing _) = pictures $ showBoard ++ showPieces pcs assets
-showGame assets (Game (Board pcs) _ (Just sel) (mX, mY)) =
-    pictures $ showBoard ++ showPieces pcs assets ++ [selPiece]
+showGame assets (Game (Board pcs) _ _ sel (mX, mY)) =
+    pictures $
+        showBoard ++
+        showPieces pcs assets ++
+        [selPic sel] ++
+        showNums
         where
-            selPiece = showPiece sel mX mY assets
+            selPic (Just x) = showPiece x mX mY assets
+            selPic Nothing = Blank
+
+            showNums = [translate (-(width/2) + 10) (topLeft y - sqSize / 2.4) $ scale 0.2 0.2 $ (text . show) (8-y) | y <- [7,6..0] :: [Int]]

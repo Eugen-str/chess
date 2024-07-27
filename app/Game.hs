@@ -17,6 +17,7 @@ data Piece = Piece { ptype :: PieceType
 newtype Board = Board { pieces :: [[Piece]] }
 
 data Game = Game { board :: Board
+                 , player :: PlayerColor
                  , nMoves :: Int
                  , selectedPiece :: Maybe Piece
                  , prevMousePos :: (Float, Float) }
@@ -24,11 +25,13 @@ data Game = Game { board :: Board
 width :: Float
 width = 800
 
+height :: Float
+height = 800
+
 sqSize :: Float
 sqSize = width / 8
 
 topLeft :: Int -> Float
 topLeft x = fromIntegral x * sqSize - center
     where
-        center = width / 2 - sqSize / 2
-
+        center = width / 2 - sqSize/2
