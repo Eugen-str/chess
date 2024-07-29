@@ -43,3 +43,9 @@ topLeft x = fromIntegral x * sqSize - center
 fromJust :: Maybe a -> a
 fromJust (Just x) = x
 fromJust Nothing = error "ERROR: fromJust - Nothing"
+
+nextColor :: PlayerColor -> PlayerColor
+nextColor White = Black
+nextColor Black = White
+nextColor NoColor = error "ERROR: nextColor"
+

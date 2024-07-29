@@ -16,11 +16,6 @@ replaceNth2d x y new (curr:rest) res | y /= 0 = replaceNth2d x (y - 1) new rest 
         replaceNth _ _ _ _ = error "replaceNth error"
 replaceNth2d x y _ _ _ = error $ "replaceNth2d error: x = " <> show x <> " y = " <> show y
 
-nextColor :: PlayerColor -> PlayerColor
-nextColor White = Black
-nextColor Black = White
-nextColor NoColor = error "ERROR: nextColor"
-
 handleInputs :: Event -> Game -> Game
 handleInputs (EventKey (MouseButton LeftButton) Down _ (mX, mY))
     (Game (Board brd) col nMvs prevSel availMoves _) = newGame
