@@ -1,3 +1,3 @@
 # chess
 
-![example image](assets/example.png)
+<img src="assets/example.png" alt="example" width="500"/>

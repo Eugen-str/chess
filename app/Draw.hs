@@ -6,6 +6,7 @@ import Graphics.Gloss
 
 import Data.Map (Map)
 import qualified Data.Map as Map
+import Data.Char (chr, ord)
 
 darkPurple,purple,lightPurple,fogWhite,skyBlue,blue,darkBlue,cream,coldWhite,trPurple,trRed :: Color
 darkPurple  = makeColorI  69  58  98 255
@@ -74,12 +75,14 @@ showGame assets (Game (Board pcs) _ _ sel moves (mX, mY)) =
         showAvailMoves moves ++
         showPieces pcs assets ++
         [selPic sel] ++
-        showNums
+        showNums ++
+        showLetters
         where
             selPic (Just x) = showPiece x mX mY assets
             selPic Nothing = Blank
 
             showNums = [translate (-(width/2) + 10) (topLeft y - sqSize / 2.4) $ scale 0.2 0.2 $ (text . show) (8-y) | y <- [7,6..0] :: [Int]]
+            showLetters = [translate (topLeft x + sqSize / 3) (-(width/2) + 10) $ scale 0.2 0.2 (text [chr (ord 'a' + x)]) | x <- [0..7] :: [Int]]
 
             showAvailMoves (Just mvs) = [drawSquareSmall x y hgColor | move <- mvs, let (x, y) = end move]
             showAvailMoves Nothing = [Blank]

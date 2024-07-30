@@ -49,7 +49,8 @@ initGame = Game b White 0 Nothing Nothing (0, 0)
             "        ",
             "        ",
             "pppppppp",
-            "rnbqkbnr"]
+            "rnbqkbnr"
+            ]
 
 stepGame :: Float -> Game -> Game
 stepGame _ game = game
