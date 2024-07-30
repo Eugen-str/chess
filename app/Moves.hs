@@ -6,16 +6,39 @@ getPiece x y (Board brd) | x < 0 || y < 0 || x > 7 || y > 7 = Piece Empty NoColo
                          | otherwise = brd !! y !! x
 
 validMoves :: Piece -> (Int, Int) -> Board -> [Move]
-validMoves (Piece Pawn col) a b = validPawn col a b
-validMoves _ _ _ = []
+validMoves (Piece typ col) (a, b) brd =
+    let
+        back :: Move
+        back = Move (a,b) (a,b) in
+    back : case typ of
+    Pawn -> validPawn col (a,b) brd
+    King -> validKing col (a,b) brd
+    Queen -> validQueen col (a,b) brd
+    Rook -> validRook col (a,b) brd
+    Bishop -> validBishop col (a,b) brd
+    Knight -> validKnight col (a,b) brd
+    Empty -> error "unreachable code"
 
 checkMove :: Int -> Int -> Int -> Int -> Board -> [Move]
 checkMove x1 y1 x2 y2 brd =
-    [Move (x1,y1) (x2,y2) | ptype (getPiece x2 y2 brd) == Empty]
+    [Move (x1,y1) (x2,y2) | ptype (getPiece x2 y2 brd) == Empty, x2 <= 7, x2 >= 0, y2 <= 7, y2 >= 0]
 
 checkTake :: Int -> Int -> Int -> Int -> PlayerColor -> Board -> [Move]
 checkTake x1 y1 x2 y2 pc brd =
-    [Move (x1,y1) (x2,y2) | pcolor (getPiece x2 y2 brd) == nextColor pc]
+    [Move (x1,y1) (x2,y2) | pcolor (getPiece x2 y2 brd) == nextColor pc, x2 <= 7, x2 >= 0, y2 <= 7, y2 >= 0]
+
+checkMoveOrTake :: Int -> Int -> Int -> Int -> PlayerColor -> Board -> [Move]
+checkMoveOrTake x1 y1 x2 y2 pc brd = if null move then take else move
+    where
+        move = checkMove x1 y1 x2 y2 brd
+        take = checkTake x1 y1 x2 y2 pc brd
+
+getDiagonal :: PlayerColor -> (Int, Int) -> Board -> (Int, Int) -> [Move]
+getDiagonal curr_player' (x', y') brd' (i, j) | x' > 7 || x' < 0 || y' > 7 || y' < 0 = []
+                                              | not (null move) = move ++ getDiagonal curr_player' (x'+i,y'+j) brd' (i, j)
+                                              | otherwise = checkTake x' y' (x'+i) (y'+j) curr_player' brd'
+            where
+                move = checkMove x' y' (x'+i) (y'+j) brd'
 
 validPawn :: PlayerColor -> (Int, Int) -> Board -> [Move]
 validPawn curr_player (x, y) brd | y == 1 && curr_player == White = move_fwd ++ move_fwd_2 ++ diag
@@ -29,3 +52,31 @@ validPawn curr_player (x, y) brd | y == 1 && curr_player == White = move_fwd ++ 
         take_right = checkTake x y (x+1) (y+mov) curr_player brd
         take_left = checkTake x y (x-1) (y+mov) curr_player brd
         diag = take_right ++ take_left
+
+validRook :: PlayerColor -> (Int, Int) -> Board -> [Move]
+validRook curr_player (x, y) brd = n ++ e ++ w ++ s
+    where
+        n = getDiagonal curr_player (x, y) brd ( 0, -1)
+        e = getDiagonal curr_player (x, y) brd ( 1,  0)
+        s = getDiagonal curr_player (x, y) brd ( 0,  1)
+        w = getDiagonal curr_player (x, y) brd (-1,  0)
+
+validBishop :: PlayerColor -> (Int, Int) -> Board -> [Move]
+validBishop curr_player (x, y) brd = nw ++ ne ++ sw ++ se
+    where
+        nw = getDiagonal curr_player (x, y) brd (-1, -1)
+        sw = getDiagonal curr_player (x, y) brd (-1,  1)
+        ne = getDiagonal curr_player (x, y) brd ( 1, -1)
+        se = getDiagonal curr_player (x, y) brd ( 1,  1)
+
+validKnight :: PlayerColor -> (Int, Int) -> Board -> [Move]
+validKnight curr_player (x, y) brd = a ++ b
+    where
+        a = foldr1 (++) [checkMoveOrTake x y (x+x2) (y+y2) curr_player brd | x2 <- [-1,1], y2 <- [-2, 2]]
+        b = foldr1 (++) [checkMoveOrTake x y (x+x2) (y+y2) curr_player brd | x2 <- [-2,2], y2 <- [-1, 1]]
+
+validKing :: PlayerColor -> (Int, Int) -> Board -> [Move]
+validKing = undefined
+
+validQueen :: PlayerColor -> (Int, Int) -> Board -> [Move]
+validQueen = (<>) <$> validBishop <*> validRook

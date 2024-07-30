@@ -81,7 +81,5 @@ showGame assets (Game (Board pcs) _ _ sel moves (mX, mY)) =
 
             showNums = [translate (-(width/2) + 10) (topLeft y - sqSize / 2.4) $ scale 0.2 0.2 $ (text . show) (8-y) | y <- [7,6..0] :: [Int]]
 
-            showAvailMoves (Just mvs) = drawCircle sX sY hgColor : [drawSquareSmall x y hgColor | move <- mvs, let (x, y) = end move] 
-                where
-                    (sX, sY) = start (head mvs)
+            showAvailMoves (Just mvs) = [drawSquareSmall x y hgColor | move <- mvs, let (x, y) = end move]
             showAvailMoves Nothing = [Blank]
