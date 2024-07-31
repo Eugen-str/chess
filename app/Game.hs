@@ -27,18 +27,36 @@ data Move = Move { start :: (Int, Int)
                  , end   :: (Int, Int) } deriving Eq
 
 width :: Float
-width = 800
+width = 1000
 
 height :: Float
 height = 800
 
 sqSize :: Float
-sqSize = width / 8
+sqSize = height / 9
 
-topLeft :: Int -> Float
-topLeft x = fromIntegral x * sqSize - center
+boardLoc :: (Int, Int)
+boardLoc = ( round $ (width  - sqSize * 8) / 2
+           , round $ (height - sqSize * 8) / 2)
+
+sqSizeI :: Int
+sqSizeI = round sqSize
+
+topLeftX :: Int -> Float
+topLeftX x = fromIntegral x - centerX
     where
-        center = width / 2 - sqSize/2
+        centerX = width / 2
+
+topLeftY :: Int -> Float
+topLeftY y = fromIntegral y - centerY
+    where
+        centerY = height / 2
+
+topLeftXY :: (Int, Int) -> (Float, Float)
+topLeftXY (x,y) = (fromIntegral x - centerX, fromIntegral y - centerY)
+    where
+        centerX = width / 2
+        centerY = height / 2
 
 fromJust :: Maybe a -> a
 fromJust (Just x) = x

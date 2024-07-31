@@ -8,7 +8,8 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Char (chr, ord)
 
-darkPurple,purple,lightPurple,fogWhite,skyBlue,blue,darkBlue,cream,coldWhite,trPurple,trRed :: Color
+darkGrey,darkPurple,purple,lightPurple,fogWhite,skyBlue,blue,darkBlue,cream,coldWhite,trPurple,trRed :: Color
+darkGrey    = makeColorI  28  28  28 255
 darkPurple  = makeColorI  69  58  98 255
 purple      = makeColorI  94  80 134 255
 lightPurple = makeColorI 143  78 139 255
@@ -22,27 +23,47 @@ trPurple    = makeColorI  69  58  98 128
 trRed       = makeColorI 158  42  43 180
 
 bgColor :: Color
-bgColor = fogWhite
+bgColor = coldWhite
+
+boardWhiteColor :: Color
+boardWhiteColor = fogWhite
+
+boardBlackColor :: Color
+boardBlackColor = Draw.blue
 
 hgColor :: Color
 hgColor = trRed
 
-showBoard :: [Picture]
-showBoard = [pictures [drawSquare x y Draw.blue | let i = y `mod` 2 , x <- [i,i+2..7]] | y <- [0..7] :: [Int]]
+showBoard :: Color -> [Picture]
+showBoard c = [pictures [drawSquare (fromIntegral x*sqSize + sqSize/2 + fromIntegral sx) (fromIntegral y*sqSize + sqSize/2 + fromIntegral sy) c
+                        | let i = y `mod` 2 , x <- [i,i+2..7]]
+              | y <- [0..7] :: [Int]]
+    where
+        (sx, sy) = boardLoc
 
-drawSquare :: Int -> Int -> Color -> Picture
-drawSquare x y c = color c $ translate (topLeft x) (topLeft y) (rectangleSolid sqSize sqSize)
+topLeftSq :: Int -> Float
+topLeftSq x = fromIntegral x*sqSize + sqSize / 2
 
-drawSquareSmall :: Int -> Int -> Color -> Picture
-drawSquareSmall x y c = color c $ translate (topLeft x) (topLeft y) (rectangleSolid (sqSize - 5) (sqSize - 5))
+drawSquare :: Float -> Float -> Color -> Picture
+drawSquare x y c = color c $ translate sx sy (rectangleSolid sqSize sqSize)
+    where
+        (sx, sy) = topLeftXY (round x, round y)
+
+drawSquareSmall :: Float -> Float -> Color -> Picture
+drawSquareSmall x y c = color c $ translate sx sy (rectangleSolid (sqSize - 5) (sqSize - 5))
+    where
+        (sx, sy) = topLeftXY (round x, round y)
 
 drawCircle :: Int -> Int -> Color -> Picture
-drawCircle x y c = color c $ translate (topLeft x) (topLeft y) (circleSolid (sqSize / 5))
+drawCircle x y c = color c $ translate cx cy (circleSolid (sqSize / 5))
+    where
+        (cx, cy) = topLeftXY (x, y)
 
 showPiece :: Piece -> Float -> Float -> Map String Picture -> Picture
 showPiece (Piece Empty _) _ _ _ = Blank
-showPiece p x y assets = translate x y $ scale 0.1 0.1 $ assets Map.! getStrPiece p
+showPiece p x y assets = translate x y $ scale pScale pScale $ assets Map.! getStrPiece p
     where
+        pScale = sqSize / 1000
         getStrPiece :: Piece -> String
         getStrPiece (Piece ptyp pcol) = res
             where
@@ -65,24 +86,51 @@ showPieces pcs assets = showPieces_ pcs 0
 
         showRow :: [Piece] -> Int -> Int-> [Picture]
         showRow [] _ _ = []
-        showRow (p:xs) x y = showPiece p (topLeft x) (topLeft y) assets : showRow xs (x + 1) y
+        showRow (p:xs) x y =
+            showPiece p (px+fromIntegral bx) (py+fromIntegral by) assets
+                : showRow xs (x + 1) y
+                    where
+                        (px, py) = topLeftXY(round $ topLeftSq x, round $ topLeftSq y)
+                        (bx, by) = boardLoc
 
 
 showGame :: Map String Picture -> Game -> Picture
 showGame assets (Game (Board pcs) _ _ sel moves (mX, mY)) =
     pictures $
-        showBoard ++
+        boardBgAndBorder ++
+        showBoard boardBlackColor ++
         showAvailMoves moves ++
         showPieces pcs assets ++
         [selPic sel] ++
         showNums ++
         showLetters
         where
+            (bx, by) = boardLoc
+
             selPic (Just x) = showPiece x mX mY assets
             selPic Nothing = Blank
 
-            showNums = [translate (-(width/2) + 10) (topLeft y - sqSize / 2.4) $ scale 0.2 0.2 $ (text . show) (8-y) | y <- [7,6..0] :: [Int]]
-            showLetters = [translate (topLeft x + sqSize / 3) (-(width/2) + 10) $ scale 0.2 0.2 (text [chr (ord 'a' + x)]) | x <- [0..7] :: [Int]]
+            boardBgAndBorder = [
+                translate xc yc $ color boardWhiteColor $ rectangleSolid a a,
+                translate xc yc $ color darkPurple $ rectangleWire a a
+                ]
+                where
+                    a = sqSize*8
+                    (x, y) = topLeftXY boardLoc
+                    (xc, yc) = (x + a/2, y + a/2)
 
-            showAvailMoves (Just mvs) = [drawSquareSmall x y hgColor | move <- mvs, let (x, y) = end move]
+            showNums =
+                [translate (topLeftX $ fromIntegral bx - 20)
+                           (topLeftY $ round $ fromIntegral y*sqSize + sqSize / 2.5 + fromIntegral by)
+                           $ scale 0.2 0.2 $ (text . show) (8-y)
+                | y <- [7,6..0] :: [Int]]
+            showLetters =
+                [translate (topLeftX $ round $ fromIntegral x*sqSize + sqSize / 3 + fromIntegral bx)
+                           (topLeftY $ fromIntegral by - 20)
+                           $ scale 0.2 0.2 (text [chr (ord 'a' + x)])
+                | x <- [0..7] :: [Int]]
+
+            showAvailMoves (Just mvs) =
+                [drawSquareSmall (topLeftSq x + fromIntegral bx) (topLeftSq y + fromIntegral by) hgColor
+                | move <- mvs, let (x, y) = end move]
             showAvailMoves Nothing = [Blank]
