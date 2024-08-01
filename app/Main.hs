@@ -1,3 +1,5 @@
+{-# LANGUAGE RecordWildCards #-}
+
 module Main where
 
 import Draw
@@ -39,7 +41,7 @@ makeBoard strs = Board (makeBoard_ strs)
         _ -> error $ "Unkown piece: " <> [x]
 
 initGame :: Game
-initGame = Game b White 0 Nothing Nothing (0, 0)
+initGame = Game Playing b White 0 Nothing Nothing (0, 0) (60*5) (60*5)
     where
         b = makeBoard [
             "RNBQKBNR",
@@ -53,7 +55,11 @@ initGame = Game b White 0 Nothing Nothing (0, 0)
             ]
 
 stepGame :: Float -> Game -> Game
-stepGame _ game = game
+stepGame time (Game {..}) = Game {whiteTimer = if player == White && gameState == Playing then whiteTimer - time else whiteTimer,
+                                  blackTimer = if player == Black && gameState == Playing then blackTimer - time else blackTimer,
+                                  gameState  = if whiteTimer <= 0 && gameState == Playing then BlackVictory
+                                          else if blackTimer <= 0 && gameState == Playing then WhiteVictory else gameState,
+                                  ..}
 
 getAssets :: [String] -> IO [Picture]
 getAssets [] = return []
@@ -68,4 +74,5 @@ main = do
     let pieceName = ["bb", "bk", "bn", "bp", "bq", "br", "wb", "wk", "wn", "wp","wq", "wr"]
     assets <- getAssets (map (\x -> "assets/" ++ x ++ ".png") pieceName)
     let assetMap = Map.fromList (zip pieceName assets)
+
     play window bgColor 30 initGame (showGame assetMap) handleInputs stepGame

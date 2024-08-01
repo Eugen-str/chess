@@ -95,7 +95,7 @@ showPieces pcs assets = showPieces_ pcs 0
 
 
 showGame :: Map String Picture -> Game -> Picture
-showGame assets (Game (Board pcs) _ _ sel moves (mX, mY)) =
+showGame assets (Game _ (Board pcs) _ _ sel moves (mX, mY) bTimer wTimer) =
     pictures $
         boardBgAndBorder ++
         showBoard boardBlackColor ++
@@ -103,7 +103,8 @@ showGame assets (Game (Board pcs) _ _ sel moves (mX, mY)) =
         showPieces pcs assets ++
         [selPic sel] ++
         showNums ++
-        showLetters
+        showLetters ++
+        showTimers
         where
             (bx, by) = boardLoc
 
@@ -134,3 +135,13 @@ showGame assets (Game (Board pcs) _ _ sel moves (mX, mY)) =
                 [drawSquareSmall (topLeftSq x + fromIntegral bx) (topLeftSq y + fromIntegral by) hgColor
                 | move <- mvs, let (x, y) = end move]
             showAvailMoves Nothing = [Blank]
+
+            showTimers = [translate x1 y $ scale a a $ color black $ (text . showTime) wTimer,
+                          translate x2 y $ scale a a $ color black $ (text . showTime) bTimer]
+                where
+                    x1 = topLeftX bx
+                    x2 = topLeftX (round $ 3*width/4)
+                    a = 0.3
+                    y = height / 2 - 10
+                    pad str = if length str == 1 then "0" ++ str else str
+                    showTime x = let xi = round x :: Int in (pad . show) (xi `div` 60) ++ ":" ++ (pad . show) (xi `mod` 60)

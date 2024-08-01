@@ -18,7 +18,8 @@ replaceNth2d x y _ _ _ = error $ "replaceNth2d error: x = " <> show x <> " y = "
 
 handleInputs :: Event -> Game -> Game
 handleInputs (EventKey (MouseButton LeftButton) Down _ (mX, mY))
-    oldGame@(Game (Board brd) col nMvs prevSel availMvs _) = if clickedWithinBoard then newGame else oldGame
+    oldGame@(Game state (Board brd) col nMvs prevSel availMvs _ bt wt) =
+        if clickedWithinBoard then newGame else oldGame
     where
         (tempAx, tempAy) = topLeftXY (round mX + round (width / 2), round mY + round (height / 2))
         (ax, ay) = (tempAx + sqSize * 4, tempAy + sqSize * 4)
@@ -39,24 +40,24 @@ handleInputs (EventKey (MouseButton LeftButton) Down _ (mX, mY))
             where
                 (newSel, newBoard) = replaceNth2d x y (Piece Empty NoColor) brd' []
                 newGame' = if pcolor newSel == col
-                then Game (Board newBoard) col nMvs (Just newSel) (Just (validMoves newSel (x, y) (Board newBoard))) (mX, mY)
-                else Game (Board brd') col nMvs Nothing availMvs (mX, mY)
+                then Game state (Board newBoard) col nMvs (Just newSel) (Just (validMoves newSel (x, y) (Board newBoard))) (mX, mY) bt wt
+                else Game state (Board brd') col nMvs Nothing availMvs (mX, mY) bt wt
         getOrPlace (Just piece) brd' = newGame'
             where
                 (_, newBoard) = replaceNth2d x y piece brd' []
 
                 avMoves = fromJust availMvs
                 newGame' | (x, y) == start (head avMoves) =
-                            Game (Board newBoard) col nMvs Nothing Nothing (mX, mY) -- Place back
+                            Game state (Board newBoard) col nMvs Nothing Nothing (mX, mY) bt wt -- Place back
                          | (x, y) `elem` map end avMoves =
-                            Game (Board newBoard) (nextColor col) (nMvs+1) Nothing Nothing (mX, mY) -- Move piece
-                         | otherwise = Game (Board brd) col nMvs prevSel availMvs (mX, mY) -- Illegal move
+                            Game state (Board newBoard) (nextColor col) (nMvs+1) Nothing Nothing (mX, mY) bt wt -- Move piece
+                         | otherwise = Game state (Board brd) col nMvs prevSel availMvs (mX, mY) bt wt -- Illegal move
 
         newGame = getOrPlace prevSel brd
 
 
 handleInputs (EventMotion (mX, mY)) game = newGame
     where
-        (Game (Board brd) col nMvs prevSel availMvs _) = game
-        newGame = Game (Board brd) col nMvs prevSel availMvs (mX, mY)
+        (Game state (Board brd) col nMvs prevSel availMvs _ bt wt) = game
+        newGame = Game state (Board brd) col nMvs prevSel availMvs (mX, mY) bt wt
 handleInputs _ game = game

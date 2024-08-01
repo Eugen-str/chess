@@ -1,5 +1,11 @@
 module Game where
 
+data GameState = Menu
+               | Playing
+               | WhiteVictory
+               | BlackVictory
+               deriving Eq
+
 data PieceType = Pawn
                | Rook
                | Knight
@@ -16,12 +22,15 @@ data Piece = Piece { ptype  :: PieceType
 
 newtype Board = Board { pieces :: [[Piece]] }
 
-data Game = Game { board         :: Board
+data Game = Game { gameState     :: GameState
+                 , board         :: Board
                  , player        :: PlayerColor
                  , nMoves        :: Int
                  , selectedPiece :: Maybe Piece
                  , availMoves    :: Maybe [Move]
-                 , prevMousePos  :: (Float, Float) }
+                 , prevMousePos  :: (Float, Float)
+                 , blackTimer    :: Float
+                 , whiteTimer    :: Float }
 
 data Move = Move { start :: (Int, Int)
                  , end   :: (Int, Int) } deriving Eq
@@ -66,4 +75,3 @@ nextColor :: PlayerColor -> PlayerColor
 nextColor White = Black
 nextColor Black = White
 nextColor NoColor = error "ERROR: nextColor"
-
