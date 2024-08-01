@@ -93,8 +93,35 @@ showPieces pcs assets = showPieces_ pcs 0
                         (px, py) = topLeftXY(round $ topLeftSq x, round $ topLeftSq y)
                         (bx, by) = boardLoc
 
-
 showGame :: Map String Picture -> Game -> Picture
+showGame assets (Game Menu _ _ _ _ _ _ _ _) =
+    pictures $
+        showTitle :
+        showButtonPlay2P ++
+        knight
+        where
+            showTitle = let (x, y) = titlePos in translate x y $ color purple $ text "Chess"
+
+            centerTextInButton x y w h = (x - w / 2 + 20, y - h / 4)
+
+            showButtonPlay2P =
+                [translate x y $ color skyBlue $ rectangleWire w h,
+                 translate cx cy $ color black $ scale 0.25 0.25 $ text "Play"]
+                    where
+                        ((x, y), (w, h)) = buttonPlay2P
+                        (cx, cy) = centerTextInButton x y w h
+
+            {-
+            showButtonQuit =
+                [translate x y $ color skyBlue $ rectangleWire w h,
+                 translate cx cy $ color black $ scale 0.25 0.25 $ text "Quit"]
+                    where
+                        ((x, y), (w, h)) = buttonQuit
+                        (cx, cy) = centerTextInButton x y w h
+            -}
+
+            knight = [scale 5 5 $ showPiece (Piece Rook White) 50 0 assets]
+
 showGame assets (Game _ (Board pcs) _ _ sel moves (mX, mY) bTimer wTimer) =
     pictures $
         boardBgAndBorder ++
@@ -143,5 +170,6 @@ showGame assets (Game _ (Board pcs) _ _ sel moves (mX, mY) bTimer wTimer) =
                     x2 = topLeftX (round $ 3*width/4)
                     a = 0.3
                     y = height / 2 - 10
+
                     pad str = if length str == 1 then "0" ++ str else str
                     showTime x = let xi = round x :: Int in (pad . show) (xi `div` 60) ++ ":" ++ (pad . show) (xi `mod` 60)

@@ -18,10 +18,18 @@ replaceNth2d x y _ _ _ = error $ "replaceNth2d error: x = " <> show x <> " y = "
 
 handleInputs :: Event -> Game -> Game
 handleInputs (EventKey (MouseButton LeftButton) Down _ (mX, mY))
+    same@(Game Menu _ _ _ _ _ _ _ _) | clicked buttonPlay2P = initGame Playing
+                                     | otherwise = same
+    where
+        (ax, ay) = topLeftXY (round (mX + width / 2), round (mY + height / 2))
+        clicked btn = let ((x, y), (w, h)) = btn in
+            ax >= x - w/2 && ax <= x + w/2 && ay >= y - h/2 && y <= y + h/2
+
+handleInputs (EventKey (MouseButton LeftButton) Down _ (mX, mY))
     oldGame@(Game state (Board brd) col nMvs prevSel availMvs _ bt wt) =
         if clickedWithinBoard then newGame else oldGame
     where
-        (tempAx, tempAy) = topLeftXY (round mX + round (width / 2), round mY + round (height / 2))
+        (tempAx, tempAy) = topLeftXY (round (mX + width / 2), round (mY + height / 2))
         (ax, ay) = (tempAx + sqSize * 4, tempAy + sqSize * 4)
         (tempBx, tempBy) = topLeftXY boardLoc
         (bx, by) = (tempBx + sqSize * 4, tempBy + sqSize * 4)
