@@ -1,4 +1,3 @@
-
 module Main where
 
 import Draw
@@ -11,7 +10,7 @@ import Graphics.Gloss
 import Graphics.Gloss.Juicy
 
 window :: Display
-window = InWindow "chess" (round width, round width) (100, 100)
+window = InWindow "chess" (round width, round height) (100, 100)
 
 getAssets :: [String] -> IO [Picture]
 getAssets [] = return []

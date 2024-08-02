@@ -111,15 +111,6 @@ showGame assets (Game Menu _ _ _ _ _ _ _ _) =
                         ((x, y), (w, h)) = buttonPlay2P
                         (cx, cy) = centerTextInButton x y w h
 
-            {-
-            showButtonQuit =
-                [translate x y $ color skyBlue $ rectangleWire w h,
-                 translate cx cy $ color black $ scale 0.25 0.25 $ text "Quit"]
-                    where
-                        ((x, y), (w, h)) = buttonQuit
-                        (cx, cy) = centerTextInButton x y w h
-            -}
-
             knight = [scale 5 5 $ showPiece (Piece Rook White) 50 0 assets]
 
 showGame assets (Game _ (Board pcs) _ _ sel moves (mX, mY) bTimer wTimer) =
@@ -167,9 +158,9 @@ showGame assets (Game _ (Board pcs) _ _ sel moves (mX, mY) bTimer wTimer) =
                           translate x2 y $ scale a a $ color black $ (text . showTime) bTimer]
                 where
                     x1 = topLeftX bx
-                    x2 = topLeftX (round $ 3*width/4)
+                    x2 = x1 + sqSize*6
                     a = 0.3
-                    y = height / 2 - 10
+                    y = topLeftY $ by + sqSizeI*8 + 10
 
                     pad str = if length str == 1 then "0" ++ str else str
                     showTime x = let xi = round x :: Int in (pad . show) (xi `div` 60) ++ ":" ++ (pad . show) (xi `mod` 60)

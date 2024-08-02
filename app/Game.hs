@@ -38,20 +38,18 @@ data Move = Move { start :: (Int, Int)
                  , end   :: (Int, Int) } deriving Eq
 
 width :: Float
-width = 1000
+width = 1280
 
 height :: Float
-height = 800
+height = 720
 
 sqSize :: Float
-sqSize = height / 9
+sqSize = height / 10
 
 -- Definitions for the menu buttons / title
 
--- (x + w / 2) (y + h / 4)
---
 titlePos :: (Float, Float)
-titlePos = (topLeftX 50, height/2 - 50)
+titlePos = (topLeftX 50, 50)
 
 buttonPlay2P :: ((Float, Float), (Float, Float))
 buttonPlay2P = let (x, y) = titlePos in ((x + w/2, y + h / 4 - 200), (w, h))
